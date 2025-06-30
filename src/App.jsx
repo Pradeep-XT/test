@@ -270,7 +270,6 @@
 
 // export default App;
 
-
 import { useEffect, useRef, useState } from "react";
 import { Button, Modal, message } from "antd";
 import { BrowserQRCodeReader } from "@zxing/browser";
@@ -344,33 +343,35 @@ const App = () => {
           <strong>Scanned Result:</strong> {result}
         </div>
       )}
-
       <Modal
-        title={null}
         open={isModalOpen}
         onCancel={closeModal}
         footer={null}
         destroyOnClose
         width="100vw"
         centered
-        style={{ top: 0, padding: 0 }}
-        bodyStyle={{ padding: 0 }}
+        style={{ top: 0, padding: 0, background: "black" }}
+        bodyStyle={{ padding: 0, background: "black" }}
       >
-        <div className="relative w-full h-[80vh] bg-black">
+        <div className="relative w-full h-[80vh] bg-black overflow-hidden">
+          {/* Video behind */}
           <video
             ref={videoRef}
-            className="w-full h-full object-cover"
+            className="absolute top-0 left-0 w-full h-full object-cover z-0"
             autoPlay
             playsInline
             muted
           />
-          {/* Overlay UI */}
-          <div className="absolute inset-0 bg-black bg-opacity-40 flex justify-center items-center">
+
+          {/* Overlay */}
+          <div className="absolute inset-0 z-10 flex justify-center items-center bg-black/40">
             <div className="relative w-64 h-64 border-2 border-white rounded-lg">
-              <div className="absolute inset-0 animate-scanLine bg-gradient-to-b from-transparent via-white/50 to-transparent h-1 w-full" />
+              <div className="absolute inset-0 animate-scanLine bg-gradient-to-b from-transparent via-white/60 to-transparent h-1 w-full" />
             </div>
           </div>
-          <div className="absolute bottom-4 w-full text-center text-white text-sm">
+
+          {/* Instruction text */}
+          <div className="absolute bottom-4 w-full text-center text-white z-20 text-sm">
             Align the QR code within the frame
           </div>
         </div>
@@ -393,4 +394,3 @@ const App = () => {
 };
 
 export default App;
-
