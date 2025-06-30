@@ -107,11 +107,11 @@ const App = () => {
       setLoading(true);
 
       const payload = {
-        name: values.name,
+        username: values.username,
         phone: values.phone,
         email: values.email,
         password: values.password,
-        referalId: values.referalId,
+        // referalId: values.referalId,
       };
 
       await PartnerService.endUserRegister(payload, scannedId);
@@ -218,7 +218,7 @@ const App = () => {
       >
         <Form form={form} layout="vertical" className="mt-4">
           <Form.Item
-            name="name"
+            name="username"
             label="User Name"
             rules={[{ required: true, message: "Enter user name" }]}
           >
@@ -271,7 +271,7 @@ const App = () => {
           dataSource={userData}
           rowKey="id"
           columns={[
-            { title: "Name", dataIndex: "name" },
+            { title: "Name", dataIndex: "username" },
             { title: "Email", dataIndex: "email" },
             { title: "Phone", dataIndex: "phone" },
             { title: "Referral ID", dataIndex: "referalId" },
