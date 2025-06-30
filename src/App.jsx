@@ -12,7 +12,7 @@ import api from "./api";
 const PartnerService = {
   endUserRegister: async (payload, id) => {
     try {
-      const response = await api.post(`/emergency/${id}`, payload);
+      const response = await api.post(`/enduser/emergency/${id}`, payload);
       return response.data;
     } catch (error) {
       console.error("Error in register User:", error);
