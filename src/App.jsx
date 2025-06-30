@@ -280,6 +280,7 @@ const App = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [scanner, setScanner] = useState(null);
   const [result, setResult] = useState(null);
+  const [stream, setStream] = useState(null);
 
   const openModal = () => {
     setIsModalOpen(true);
@@ -292,14 +293,24 @@ const App = () => {
 
   const startScanner = async () => {
     try {
-      // Prompt camera permission early
-      await navigator.mediaDevices.getUserMedia({ video: true });
+      // Ask for permission and get stream
+      const userMediaStream = await navigator.mediaDevices.getUserMedia({
+        video: { facingMode: "environment" },
+      });
+
+      setStream(userMediaStream); // Save stream for stopping later
+
+      // Manually set stream to video tag for preview
+      if (videoRef.current) {
+        videoRef.current.srcObject = userMediaStream;
+        await videoRef.current.play();
+      }
 
       const codeReader = new BrowserQRCodeReader();
       setScanner(codeReader);
 
-      const result = await codeReader.decodeOnceFromVideoDevice(
-        { facingMode: "environment" },
+      const result = await codeReader.decodeOnceFromStream(
+        userMediaStream,
         videoRef.current
       );
 
@@ -314,21 +325,21 @@ const App = () => {
 
   const stopScanner = () => {
     try {
-      scanner?.reset?.(); // Defensive: check if reset exists
+      // Stop all tracks
+      stream?.getTracks().forEach((track) => track.stop());
+      scanner?.reset?.();
     } catch (e) {
-      console.warn("Scanner reset failed:", e);
+      console.warn("Stop scanner error:", e);
     }
+    setStream(null);
     setScanner(null);
   };
 
   useEffect(() => {
     let timeout;
     if (isModalOpen) {
-      // Delay ensures the video element is mounted
       timeout = setTimeout(() => {
-        if (videoRef.current) {
-          startScanner();
-        }
+        startScanner();
       }, 800);
     }
 
@@ -363,7 +374,7 @@ const App = () => {
           autoPlay
           playsInline
           muted
-          style={{ width: "100%", borderRadius: 8 }}
+          style={{ width: "100%", borderRadius: 8, background: "#000" }}
         />
       </Modal>
     </div>
