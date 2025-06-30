@@ -292,12 +292,17 @@ const App = () => {
 
   const startScanner = async () => {
     try {
+      // Prompt camera permission early
+      await navigator.mediaDevices.getUserMedia({ video: true });
+
       const codeReader = new BrowserQRCodeReader();
       setScanner(codeReader);
+
       const result = await codeReader.decodeOnceFromVideoDevice(
         { facingMode: "environment" },
         videoRef.current
       );
+
       setResult(result.getText());
       message.success("QR code scanned!");
       closeModal();
@@ -309,7 +314,7 @@ const App = () => {
 
   const stopScanner = () => {
     try {
-      scanner?.reset();
+      scanner?.reset?.(); // Defensive: check if reset exists
     } catch (e) {
       console.warn("Scanner reset failed:", e);
     }
