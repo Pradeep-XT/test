@@ -280,11 +280,8 @@ const App = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [scanner, setScanner] = useState(null);
   const [result, setResult] = useState(null);
-  const [stream, setStream] = useState(null);
 
-  const openModal = () => {
-    setIsModalOpen(true);
-  };
+  const openModal = () => setIsModalOpen(true);
 
   const closeModal = () => {
     stopScanner();
@@ -293,30 +290,20 @@ const App = () => {
 
   const startScanner = async () => {
     try {
-      // Ask for permission and get stream
-      const userMediaStream = await navigator.mediaDevices.getUserMedia({
-        video: { facingMode: "environment" },
-      });
-
-      setStream(userMediaStream); // Save stream for stopping later
-
-      // Manually set stream to video tag for preview
-      if (videoRef.current) {
-        videoRef.current.srcObject = userMediaStream;
-        await videoRef.current.play();
-      }
-
       const codeReader = new BrowserQRCodeReader();
       setScanner(codeReader);
-
-      const result = await codeReader.decodeOnceFromStream(
-        userMediaStream,
+      const result = await codeReader.decodeOnceFromVideoDevice(
+        { facingMode: "environment" },
         videoRef.current
       );
-
-      setResult(result.getText());
+      const scannedText = result.getText();
+      setResult(scannedText);
       message.success("QR code scanned!");
       closeModal();
+      // Auto open if it's a URL
+      if (scannedText.startsWith("http")) {
+        window.open(scannedText, "_blank");
+      }
     } catch (err) {
       message.error("Failed to scan QR code");
       console.error("Scan error:", err);
@@ -325,13 +312,10 @@ const App = () => {
 
   const stopScanner = () => {
     try {
-      // Stop all tracks
-      stream?.getTracks().forEach((track) => track.stop());
-      scanner?.reset?.();
+      scanner?.reset();
     } catch (e) {
-      console.warn("Stop scanner error:", e);
+      console.warn("Scanner reset failed:", e);
     }
-    setStream(null);
     setScanner(null);
   };
 
@@ -339,10 +323,9 @@ const App = () => {
     let timeout;
     if (isModalOpen) {
       timeout = setTimeout(() => {
-        startScanner();
+        if (videoRef.current) startScanner();
       }, 800);
     }
-
     return () => {
       clearTimeout(timeout);
       stopScanner();
@@ -363,22 +346,51 @@ const App = () => {
       )}
 
       <Modal
-        title="Scan QR Code"
+        title={null}
         open={isModalOpen}
         onCancel={closeModal}
         footer={null}
         destroyOnClose
+        width="100vw"
+        centered
+        style={{ top: 0, padding: 0 }}
+        bodyStyle={{ padding: 0 }}
       >
-        <video
-          ref={videoRef}
-          autoPlay
-          playsInline
-          muted
-          style={{ width: "100%", borderRadius: 8, background: "#000" }}
-        />
+        <div className="relative w-full h-[80vh] bg-black">
+          <video
+            ref={videoRef}
+            className="w-full h-full object-cover"
+            autoPlay
+            playsInline
+            muted
+          />
+          {/* Overlay UI */}
+          <div className="absolute inset-0 bg-black bg-opacity-40 flex justify-center items-center">
+            <div className="relative w-64 h-64 border-2 border-white rounded-lg">
+              <div className="absolute inset-0 animate-scanLine bg-gradient-to-b from-transparent via-white/50 to-transparent h-1 w-full" />
+            </div>
+          </div>
+          <div className="absolute bottom-4 w-full text-center text-white text-sm">
+            Align the QR code within the frame
+          </div>
+        </div>
       </Modal>
+
+      {/* Tailwind animation */}
+      <style>
+        {`
+          @keyframes scanLine {
+            0% { top: 0; }
+            100% { top: 100%; }
+          }
+          .animate-scanLine {
+            animation: scanLine 2s linear infinite;
+          }
+        `}
+      </style>
     </div>
   );
 };
 
 export default App;
+
