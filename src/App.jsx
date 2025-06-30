@@ -278,23 +278,43 @@
 
 
 import { useEffect, useRef, useState } from "react";
-import { Button, Modal, message } from "antd";
+import {
+  Button,
+  Modal,
+  message,
+  Input,
+  Form,
+  Space,
+  Table,
+} from "antd";
+import {
+  UserAddOutlined,
+  EditOutlined,
+  DeleteOutlined,
+} from "@ant-design/icons";
 import { BrowserQRCodeReader } from "@zxing/browser";
 
 const App = () => {
   const videoRef = useRef(null);
-  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isScannerModalOpen, setIsScannerModalOpen] = useState(false);
+  const [isRegisterModalOpen, setIsRegisterModalOpen] = useState(false);
   const [scanner, setScanner] = useState(null);
   const [stream, setStream] = useState(null);
-  const [result, setResult] = useState(null);
+  const [scannedId, setScannedId] = useState(null);
+  const [form] = Form.useForm();
+  const [userData, setUserData] = useState([]);
+  const [loading, setLoading] = useState(false);
 
-  const openModal = () => setIsModalOpen(true);
+  // Open scanner
+  const openScannerModal = () => setIsScannerModalOpen(true);
 
-  const closeModal = () => {
+  // Close scanner
+  const closeScannerModal = () => {
     stopScanner();
-    setIsModalOpen(false);
+    setIsScannerModalOpen(false);
   };
 
+  // Start QR Scanner
   const startScanner = async () => {
     try {
       const userMediaStream = await navigator.mediaDevices.getUserMedia({
@@ -316,19 +336,17 @@ const App = () => {
       );
 
       const text = result.getText();
-      setResult(text);
+      setScannedId(text);
       message.success("QR code scanned!");
-      closeModal();
-
-      if (text.startsWith("http")) {
-        window.open(text, "_blank");
-      }
+      closeScannerModal();
+      setIsRegisterModalOpen(true);
     } catch (err) {
       message.error("Failed to scan QR code");
       console.error("Scan error:", err);
     }
   };
 
+  // Stop scanner
   const stopScanner = () => {
     try {
       stream?.getTracks().forEach((track) => track.stop());
@@ -340,9 +358,10 @@ const App = () => {
     setScanner(null);
   };
 
+  // Handle scanner modal open/close
   useEffect(() => {
     let timeout;
-    if (isModalOpen) {
+    if (isScannerModalOpen) {
       timeout = setTimeout(() => {
         startScanner();
       }, 800);
@@ -351,24 +370,57 @@ const App = () => {
       clearTimeout(timeout);
       stopScanner();
     };
-  }, [isModalOpen]);
+  }, [isScannerModalOpen]);
+
+  // Handle user registration submit
+  const handleSubmit = async () => {
+    try {
+      const values = await form.validateFields();
+
+      if (values.password !== values.confirmPassword) {
+        return message.error("Passwords do not match");
+      }
+
+      setLoading(true);
+
+      const newUser = {
+        ...values,
+        referalId: scannedId,
+        id: userData.length + 1,
+        createdAt: new Date().toISOString(),
+      };
+
+      // Simulate API call here
+      setUserData((prev) => [...prev, newUser]);
+
+      message.success("User registered successfully!");
+      form.resetFields();
+      setIsRegisterModalOpen(false);
+      setScannedId(null);
+    } catch (error) {
+      console.error("Registration Error:", error);
+      message.error("Failed to register user");
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
     <div style={{ padding: 24 }}>
-      <h2>QR Scanner Demo</h2>
-      <Button type="primary" onClick={openModal}>
-        Open QR Scanner
+      <h2 className="text-xl font-bold mb-4">QR Code Scanner & Registration</h2>
+      <Button
+        type="primary"
+        icon={<UserAddOutlined />}
+        onClick={openScannerModal}
+        className="bg-[#3b947f]"
+      >
+        Scan & Register
       </Button>
 
-      {result && (
-        <div style={{ marginTop: 20 }}>
-          <strong>Scanned Result:</strong> {result}
-        </div>
-      )}
-
+      {/* Scanner Modal */}
       <Modal
-        open={isModalOpen}
-        onCancel={closeModal}
+        open={isScannerModalOpen}
+        onCancel={closeScannerModal}
         footer={null}
         destroyOnClose
         width="100vw"
@@ -377,7 +429,6 @@ const App = () => {
         bodyStyle={{ padding: 0, background: "black" }}
       >
         <div className="relative w-full h-[80vh] bg-black overflow-hidden">
-          {/* Camera Feed */}
           <video
             ref={videoRef}
             autoPlay
@@ -385,21 +436,15 @@ const App = () => {
             muted
             className="absolute top-0 left-0 w-full h-full object-cover z-0"
           />
-
-          {/* Overlay Frame */}
           <div className="absolute inset-0 z-10 flex justify-center items-center bg-black/40">
             <div className="relative w-64 h-64 border-2 border-white rounded-lg">
               <div className="absolute inset-0 animate-scanLine bg-gradient-to-b from-transparent via-white/60 to-transparent h-1 w-full" />
             </div>
           </div>
-
-          {/* Text */}
           <div className="absolute bottom-4 w-full text-center text-white z-20 text-sm">
             Align the QR code within the frame
           </div>
         </div>
-
-        {/* CSS Animation for scanLine */}
         <style>
           {`
             @keyframes scanLine {
@@ -413,6 +458,99 @@ const App = () => {
           `}
         </style>
       </Modal>
+
+      {/* Register Modal */}
+      <Modal
+        title="Register End User"
+        open={isRegisterModalOpen}
+        onCancel={() => {
+          form.resetFields();
+          setIsRegisterModalOpen(false);
+          setScannedId(null);
+        }}
+        footer={[
+          <Button key="cancel" onClick={() => setIsRegisterModalOpen(false)}>
+            Cancel
+          </Button>,
+          <Button
+            key="submit"
+            type="primary"
+            loading={loading}
+            onClick={handleSubmit}
+            className="!bg-[#5a43d6] hover:!bg-white hover:!text-[#5a43d6] hover:!border-[#5a43d6] !text-white border"
+          >
+            Create
+          </Button>,
+        ]}
+        width={600}
+      >
+        <Form form={form} layout="vertical" className="mt-4">
+          <Form.Item
+            name="name"
+            label="User Name"
+            rules={[{ required: true, message: "Enter user name" }]}
+          >
+            <Input />
+          </Form.Item>
+          <Form.Item
+            name="phone"
+            label="Mobile Number"
+            rules={[{ required: true, message: "Enter mobile number" }]}
+          >
+            <Input maxLength={10} />
+          </Form.Item>
+          <Form.Item
+            name="email"
+            label="Email"
+            rules={[
+              { required: true, message: "Enter email" },
+              { type: "email", message: "Invalid email" },
+            ]}
+          >
+            <Input />
+          </Form.Item>
+          <Form.Item
+            name="password"
+            label="Password"
+            rules={[{ required: true, message: "Enter password" }]}
+          >
+            <Input.Password />
+          </Form.Item>
+          <Form.Item
+            name="confirmPassword"
+            label="Confirm Password"
+            rules={[{ required: true, message: "Re-enter password" }]}
+          >
+            <Input.Password />
+          </Form.Item>
+          <Form.Item label="Referral (Scanned QR ID)">
+            <Input value={scannedId} disabled />
+          </Form.Item>
+        </Form>
+      </Modal>
+
+      {/* Registered Users Table */}
+      <div className="mt-8">
+        <Table
+          dataSource={userData}
+          rowKey="id"
+          columns={[
+            { title: "Name", dataIndex: "name" },
+            { title: "Email", dataIndex: "email" },
+            { title: "Phone", dataIndex: "phone" },
+            { title: "Referral ID", dataIndex: "referalId" },
+            {
+              title: "Actions",
+              render: () => (
+                <Space>
+                  <Button icon={<EditOutlined />} />
+                  <Button icon={<DeleteOutlined />} danger />
+                </Space>
+              ),
+            },
+          ]}
+        />
+      </div>
     </div>
   );
 };
