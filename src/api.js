@@ -2,7 +2,7 @@
 import axios from "axios";
 
 const api = axios.create({
-  baseURL: "http://192.168.1.5:3000/api/v1/onscan",
+  baseURL: "https://tagqq.onrender.com/api/v1/onscan",
   timeout: 10000,
   headers: {
     "Content-Type": "application/json",
