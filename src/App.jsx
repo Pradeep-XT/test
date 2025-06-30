@@ -43,8 +43,14 @@ const App = () => {
       setIsScannerVisible(false);
       setIsModalVisible(true);
     } catch (err) {
+      if (err.name === "NotAllowedError") {
+        message.error("Camera access denied. Please allow camera.");
+      } else if (err.name === "NotFoundError") {
+        message.error("No camera found on this device.");
+      } else {
+        message.error("Could not scan QR Code.");
+      }
       console.error("Scanner error:", err);
-      message.error("Could not scan QR Code");
     }
   };
 
@@ -58,8 +64,14 @@ const App = () => {
   };
 
   useEffect(() => {
-    if (isScannerVisible && videoRef.current) {
-      startScanner();
+    if (isScannerVisible) {
+      const timeout = setTimeout(() => {
+        if (videoRef.current) {
+          startScanner();
+        }
+      }, 500);
+
+      return () => clearTimeout(timeout);
     } else {
       stopScanner();
     }
