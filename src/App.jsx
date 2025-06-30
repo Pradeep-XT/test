@@ -154,7 +154,6 @@ const App = () => {
           className="w-full max-w-lg"
         />
         <Button
-          type="primary"
           icon={<UserAddOutlined />}
           onClick={handleAddUser}
           className="ml-4 !bg-purple-400"
