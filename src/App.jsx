@@ -59,8 +59,10 @@ const App = () => {
         videoRef.current
       );
 
-      const text = result.getText();
-      setScannedId(text);
+      const scannedText = result.getText();
+      const id = scannedText.split("/").pop();
+      setScannedId(id);
+
       message.success("QR code scanned!");
       closeScannerModal();
       setIsRegisterModalOpen(true);
@@ -109,10 +111,10 @@ const App = () => {
         phone: values.phone,
         email: values.email,
         password: values.password,
-        referalId: values.referalId, 
+        referalId: values.referalId,
       };
 
-      await PartnerService.endUserRegister(payload, scannedId); 
+      await PartnerService.endUserRegister(payload, scannedId);
 
       setUserData((prev) => [
         ...prev,
