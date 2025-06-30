@@ -157,7 +157,7 @@ const App = () => {
           type="primary"
           icon={<UserAddOutlined />}
           onClick={handleAddUser}
-          className="ml-4 bg-purple-400"
+          className="ml-4 !bg-purple-400"
         >
           Add User (Scan)
         </Button>
