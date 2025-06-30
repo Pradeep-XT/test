@@ -256,7 +256,7 @@ const App = () => {
           <Form.Item
             name="referalId"
             label="Referral (Agent User ID)"
-            rules={[{ required: true, message: "Referral ID required" }]}
+            rules={[{ message: "Referral ID required" }]}
           >
             <Input />
           </Form.Item>
