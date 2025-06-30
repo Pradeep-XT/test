@@ -270,6 +270,13 @@
 
 // export default App;
 
+
+
+
+
+
+
+
 import { useEffect, useRef, useState } from "react";
 import { Button, Modal, message } from "antd";
 import { BrowserQRCodeReader } from "@zxing/browser";
@@ -278,6 +285,7 @@ const App = () => {
   const videoRef = useRef(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [scanner, setScanner] = useState(null);
+  const [stream, setStream] = useState(null);
   const [result, setResult] = useState(null);
 
   const openModal = () => setIsModalOpen(true);
@@ -289,19 +297,31 @@ const App = () => {
 
   const startScanner = async () => {
     try {
+      const userMediaStream = await navigator.mediaDevices.getUserMedia({
+        video: { facingMode: "environment" },
+      });
+      setStream(userMediaStream);
+
+      if (videoRef.current) {
+        videoRef.current.srcObject = userMediaStream;
+        await videoRef.current.play();
+      }
+
       const codeReader = new BrowserQRCodeReader();
       setScanner(codeReader);
-      const result = await codeReader.decodeOnceFromVideoDevice(
-        { facingMode: "environment" },
+
+      const result = await codeReader.decodeOnceFromStream(
+        userMediaStream,
         videoRef.current
       );
-      const scannedText = result.getText();
-      setResult(scannedText);
+
+      const text = result.getText();
+      setResult(text);
       message.success("QR code scanned!");
       closeModal();
-      // Auto open if it's a URL
-      if (scannedText.startsWith("http")) {
-        window.open(scannedText, "_blank");
+
+      if (text.startsWith("http")) {
+        window.open(text, "_blank");
       }
     } catch (err) {
       message.error("Failed to scan QR code");
@@ -311,10 +331,12 @@ const App = () => {
 
   const stopScanner = () => {
     try {
+      stream?.getTracks().forEach((track) => track.stop());
       scanner?.reset();
     } catch (e) {
-      console.warn("Scanner reset failed:", e);
+      console.warn("Stop scanner error:", e);
     }
+    setStream(null);
     setScanner(null);
   };
 
@@ -322,7 +344,7 @@ const App = () => {
     let timeout;
     if (isModalOpen) {
       timeout = setTimeout(() => {
-        if (videoRef.current) startScanner();
+        startScanner();
       }, 800);
     }
     return () => {
@@ -343,6 +365,7 @@ const App = () => {
           <strong>Scanned Result:</strong> {result}
         </div>
       )}
+
       <Modal
         open={isModalOpen}
         onCancel={closeModal}
@@ -354,41 +377,42 @@ const App = () => {
         bodyStyle={{ padding: 0, background: "black" }}
       >
         <div className="relative w-full h-[80vh] bg-black overflow-hidden">
-          {/* Video behind */}
+          {/* Camera Feed */}
           <video
             ref={videoRef}
-            className="absolute top-0 left-0 w-full h-full object-cover z-0"
             autoPlay
             playsInline
             muted
+            className="absolute top-0 left-0 w-full h-full object-cover z-0"
           />
 
-          {/* Overlay */}
+          {/* Overlay Frame */}
           <div className="absolute inset-0 z-10 flex justify-center items-center bg-black/40">
             <div className="relative w-64 h-64 border-2 border-white rounded-lg">
               <div className="absolute inset-0 animate-scanLine bg-gradient-to-b from-transparent via-white/60 to-transparent h-1 w-full" />
             </div>
           </div>
 
-          {/* Instruction text */}
+          {/* Text */}
           <div className="absolute bottom-4 w-full text-center text-white z-20 text-sm">
             Align the QR code within the frame
           </div>
         </div>
-      </Modal>
 
-      {/* Tailwind animation */}
-      <style>
-        {`
-          @keyframes scanLine {
-            0% { top: 0; }
-            100% { top: 100%; }
-          }
-          .animate-scanLine {
-            animation: scanLine 2s linear infinite;
-          }
-        `}
-      </style>
+        {/* CSS Animation for scanLine */}
+        <style>
+          {`
+            @keyframes scanLine {
+              0% { top: 0%; }
+              100% { top: 100%; }
+            }
+            .animate-scanLine {
+              animation: scanLine 2s linear infinite;
+              position: absolute;
+            }
+          `}
+        </style>
+      </Modal>
     </div>
   );
 };
