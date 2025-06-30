@@ -109,10 +109,10 @@ const App = () => {
         phone: values.phone,
         email: values.email,
         password: values.password,
-        referalId: values.referalId, // ✅ from form
+        referalId: values.referalId, 
       };
 
-      await PartnerService.endUserRegister(payload, scannedId); // ✅ scannedId in URL only
+      await PartnerService.endUserRegister(payload, scannedId); 
 
       setUserData((prev) => [
         ...prev,
@@ -144,7 +144,7 @@ const App = () => {
         onClick={openScannerModal}
         className="bg-[#3b947f]"
       >
-        Scan & Register
+        Add End User (via QR Scan)
       </Button>
 
       {/* Scanner Modal */}
