@@ -1,13 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import {
-  Input,
-  Button,
-  Space,
-  Form,
-  Modal,
-  Table,
-  message,
-} from "antd";
+import { Input, Button, Space, Form, Modal, Table, message } from "antd";
 import {
   SearchOutlined,
   UserAddOutlined,
@@ -64,19 +56,24 @@ const App = () => {
   };
 
   useEffect(() => {
+    let timeout;
+
     if (isScannerVisible) {
-      const timeout = setTimeout(() => {
+      timeout = setTimeout(() => {
         if (videoRef.current) {
           startScanner();
+        } else {
+          console.warn("Video element not found");
         }
-      }, 500);
-
-      return () => clearTimeout(timeout);
+      }, 800);
     } else {
       stopScanner();
     }
 
-    return () => stopScanner();
+    return () => {
+      clearTimeout(timeout);
+      stopScanner();
+    };
   }, [isScannerVisible]);
 
   const handleAddUser = () => {
@@ -128,8 +125,7 @@ const App = () => {
     {
       title: "S.No",
       key: "sno",
-      render: (_, __, index) =>
-        (currentPage - 1) * pageSize + index + 1,
+      render: (_, __, index) => (currentPage - 1) * pageSize + index + 1,
     },
     { title: "Name", dataIndex: "name", key: "name" },
     { title: "Email", dataIndex: "email", key: "email" },
