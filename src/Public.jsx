@@ -8,7 +8,7 @@ import {
 } from "@ant-design/icons";
 import { Modal } from "antd";
 import { z } from "zod";
-import api from "../services/api";
+import api from "./api";
 import TextArea from "antd/es/input/TextArea";
 
 const relayCallSchema = z.object({
@@ -41,9 +41,8 @@ export default function PublicUrl() {
   const [showSmsModal, setShowSmsModal] = useState(false);
   const [whatsappMessage, setWhatsappMessage] = useState("");
   const [smsMessage, setSmsMessage] = useState("");
-  const [location, setLocation] = useState(null); 
+  const [location, setLocation] = useState(null);
 
- 
   useEffect(() => {
     if ("geolocation" in navigator) {
       navigator.geolocation.getCurrentPosition(
@@ -108,7 +107,7 @@ export default function PublicUrl() {
       const locationLink = `\n📍 Location: https://www.google.com/maps?q=${location.latitude},${location.longitude}`;
       const message = whatsappMessage.trim() + locationLink;
 
-      console.log("📨 WhatsApp Message:", message); 
+      console.log("📨 WhatsApp Message:", message);
 
       const emergencyProfile = emergencyData.user.profiles.find(
         (p) => p.docs_name === "Emergency"
@@ -153,7 +152,7 @@ export default function PublicUrl() {
       const locationLink = `\n📍 Location: https://www.google.com/maps?q=${location.latitude},${location.longitude}`;
       const message = smsMessage.trim() + locationLink;
 
-      console.log("📨 SMS Message:", message); 
+      console.log("📨 SMS Message:", message);
       const sessionData = JSON.parse(
         sessionStorage.getItem("emergencyVerified")
       );
@@ -315,7 +314,7 @@ export default function PublicUrl() {
                   <div className="flex items-center gap-2">
                     <span className="text-xl">📞</span>
                     <span className="text-md text-gray-800 font-medium">
-                      Call
+                      Call 
                     </span>
                   </div>
                   <div className="flex items-center gap-2">
