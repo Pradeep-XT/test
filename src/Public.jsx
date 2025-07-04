@@ -30,6 +30,8 @@ const relayCallSchema = z.object({
 
 export default function PublicUrl() {
   const { id } = useParams();
+  sessionStorage.setItem("id", id);
+
   const navigate = useNavigate();
 
   const [loading, setLoading] = useState(true);
@@ -41,7 +43,7 @@ export default function PublicUrl() {
   const [whatsappMessage, setWhatsappMessage] = useState("");
   const [smsMessage, setSmsMessage] = useState("");
   const [location, setLocation] = useState(null); 
-  // ✅ Get geolocation when component mounts
+
   useEffect(() => {
     if ("geolocation" in navigator) {
       navigator.geolocation.getCurrentPosition(
