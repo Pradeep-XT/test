@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import api from "./api";
+import api from "../services/api";
 import CryptoJS from "crypto-js";
 
 const ENCRYPTION_SECRET = "12345678901234567890123456789012";
