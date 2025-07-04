@@ -8,7 +8,7 @@ import {
 } from "@ant-design/icons";
 import { Modal } from "antd";
 import { z } from "zod";
-import api from "./api";
+import api from "../services/api";
 import TextArea from "antd/es/input/TextArea";
 
 const relayCallSchema = z.object({
@@ -31,7 +31,6 @@ const relayCallSchema = z.object({
 export default function PublicUrl() {
   const { id } = useParams();
   sessionStorage.setItem("id", id);
-
   const navigate = useNavigate();
 
   const [loading, setLoading] = useState(true);
@@ -44,6 +43,7 @@ export default function PublicUrl() {
   const [smsMessage, setSmsMessage] = useState("");
   const [location, setLocation] = useState(null); 
 
+ 
   useEffect(() => {
     if ("geolocation" in navigator) {
       navigator.geolocation.getCurrentPosition(
@@ -153,8 +153,7 @@ export default function PublicUrl() {
       const locationLink = `\n📍 Location: https://www.google.com/maps?q=${location.latitude},${location.longitude}`;
       const message = smsMessage.trim() + locationLink;
 
-      console.log("📨 SMS Message:", message); // ✅ Debug output
-
+      console.log("📨 SMS Message:", message); 
       const sessionData = JSON.parse(
         sessionStorage.getItem("emergencyVerified")
       );
