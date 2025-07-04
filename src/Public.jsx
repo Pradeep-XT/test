@@ -8,7 +8,7 @@ import {
 } from "@ant-design/icons";
 import { Modal } from "antd";
 import { z } from "zod";
-import api from "../services/api";
+import api from "./api";
 import TextArea from "antd/es/input/TextArea";
 
 const relayCallSchema = z.object({
