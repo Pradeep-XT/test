@@ -106,7 +106,7 @@ export default function EmergencyAlert() {
           expiresAt: Date.now() + 5 * 60 * 1000,
         })
       );
-      navigate(`/${userId}`, { replace: true });
+      navigate(`/pulic-url/${userId}`, { replace: true });
     } catch (err) {
       console.error(err);
       setError("OTP verification failed.");
