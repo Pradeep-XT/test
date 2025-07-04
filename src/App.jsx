@@ -10,6 +10,10 @@ export default function App() {
     <Routes>
       <Route path="/public/alert" element={<EmergencyAlert />} />
       <Route path="/public-url/:id" element={<PublicUrl />} />
+      <Route
+        path="/public-emergency/:id/:contactName"
+        element={<PublicEmergencyContact />}
+      />
     </Routes>
   );
 }
